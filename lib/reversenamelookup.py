@@ -6,7 +6,13 @@ import dns.resolver
 
 
 class ReverseLookups:
-    def __init__(self, thread_count, ip_list):
+    def __init__(self, thread_count, ip_list, name_server):
+        """
+        Init function of Class
+        :param thread_count: number of threads to use
+        :param ip_list: List of IP addresses
+        :param name_server: List of IP addresses represented as strings i.e. ['8.8.8.8', '8.8.4.4']
+        """
         self.thread_count = thread_count
         self.ip_list = ip_list
         # The queue of addresses to ping
@@ -17,6 +23,8 @@ class ReverseLookups:
         self.resolver = dns.resolver.Resolver()
         self.resolver.timeout = 3
         self.resolver.lifetime = 3
+        # list of dns servers IP to use
+        self.resolver.nameservers = name_server
 
     def lookups(self):
         """
@@ -34,13 +42,13 @@ class ReverseLookups:
                     if reversed_dns:
                         self.out_q.put((address, reversed_dns))
                 except dns.resolver.NXDOMAIN:
-                    return False
+                    continue
                 except dns.resolver.NoAnswer:
-                    return False
+                    continue
                 except dns.exception.Timeout:
-                    return False
+                    continue
                 except dns.resolver.NoNameservers:
-                    return False
+                    continue
         except Queue.Empty:
             # No more addresses.
             pass
@@ -75,5 +83,5 @@ class ReverseLookups:
 
 if __name__ == '__main__':
     iplist = ['8.8.8.8', '8.8.4.4', '9.9.9.9', '172.217.10.68']
-    iplookup = ReverseLookups(8, iplist)
+    iplookup = ReverseLookups(8, iplist, ['8.8.8.8'])
     print(iplookup.start_lookups())
