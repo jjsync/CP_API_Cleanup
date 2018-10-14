@@ -20,26 +20,9 @@ import collections
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # lib is a library that handles the communication with the Check Point management server.
-from lib import APIClient, APIClientArgs
+from lib import APIClient, APIClientArgs, Pinger
 
-
-def determine_platform_arg():
-    """
-    Provides ping arguments based on platform of device executing program.
-    Needed due to differences between OS ping options
-    :return: list of ping with arguments
-    """
-    # Platform determination for ping command arguments
-    plat = platform.system()
-    if plat == 'Windows':
-        ping_args = ["ping", "-n", "1", "-w", "1"]
-    elif plat == 'Linux':
-        ping_args = ["ping", "-c", "1", "-w", "1"]
-    else:
-        raise ValueError("Unknown platform")
-    return ping_args
-
-
+'''
 def thread_pinger(pingArgs, ips_q, out_q):
     """
     ping function wrapper for threads
@@ -110,7 +93,7 @@ def ping_host_objects(number_of_thread, host_dictionary):
         w.join()
 
     return out_q.queue
-
+'''
 
 def main():
     # getting details from the user
@@ -163,8 +146,13 @@ def main():
         host_data = {"name": host["name"]}
         obj_dictionary[ipaddr] = host_data
 
-    # Send host object dictionary to ping thread returns result lists
-    queue_list = ping_host_objects(32, obj_dictionary)
+    # build IP array from passed dictionary
+    ips = obj_dictionary.keys()
+
+    # Calls Pinger class with number of threads and ip list
+    ping = Pinger(32, ips)
+    # starts ping test of IP addresses
+    queue_list = ping.start_ping()
 
     # Updates dictionary in place with status of ping results
     for i in queue_list:
