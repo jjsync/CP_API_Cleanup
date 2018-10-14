@@ -8,10 +8,6 @@
 
 # A package for reading passwords without displaying them on the console.
 from __future__ import print_function
-from threading import Thread
-import Queue
-import subprocess
-import platform
 import getpass
 import sys
 import os
@@ -94,7 +90,7 @@ def main():
     ips_dict = []
 
     for item in od_obj_dictionary:
-        sub_item = []
+        sub_item = list()
         sub_item.append(item)
         for key, value in od_obj_dictionary[item].iteritems():
             sub_item.append(value)
